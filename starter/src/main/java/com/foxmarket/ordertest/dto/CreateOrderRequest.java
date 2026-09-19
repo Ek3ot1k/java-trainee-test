@@ -9,6 +9,6 @@ import java.util.List;
 public record CreateOrderRequest(
         @NotNull
         @NotEmpty
-        List<@Valid CreateOrderItemRequest> items
+        List<@NotNull @Valid CreateOrderItemRequest> items
 ) {
 }
