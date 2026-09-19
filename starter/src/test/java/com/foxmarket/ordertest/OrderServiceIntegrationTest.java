@@ -4,8 +4,7 @@ import com.foxmarket.ordertest.dto.CreateOrderItemRequest;
 import com.foxmarket.ordertest.dto.CreateOrderRequest;
 import com.foxmarket.ordertest.dto.OrderResponse;
 import com.foxmarket.ordertest.entity.Product;
-import com.foxmarket.ordertest.exception.InsufficientStockException;
-import com.foxmarket.ordertest.exception.ProductNotFoundException;
+import com.foxmarket.ordertest.exception.*;
 import com.foxmarket.ordertest.repository.OrderRepository;
 import com.foxmarket.ordertest.repository.ProductRepository;
 import com.foxmarket.ordertest.service.OrderService;
@@ -169,5 +168,101 @@ public class OrderServiceIntegrationTest {
 
         assertEquals(10, unchangedFirstProduct.getStock());
         assertEquals(0, orderRepository.count());
+    }
+
+    @Test
+    void shouldNotCreateOrderWhenProductIsUnavailable() {
+        Product product = productRepository.save(
+                new Product(
+                        "Headphones",
+                        new BigDecimal("99.00"),
+                        5,
+                        false
+                )
+        );
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                List.of(
+                        new CreateOrderItemRequest(product.getId(), 1)
+                )
+        );
+
+        assertThrows(
+                ProductUnavailableException.class,
+                () -> orderService.createOrder(request)
+        );
+
+        Product unchangedProduct =
+                productRepository.findById(product.getId()).orElseThrow();
+
+        assertEquals(5, unchangedProduct.getStock());
+        assertEquals(0, orderRepository.count());
+    }
+
+    @Test
+    void shouldRejectDuplicateProducts() {
+        Product product = productRepository.save(
+                new Product(
+                        "Keyboard",
+                        new BigDecimal("79.99"),
+                        10,
+                        true
+                )
+        );
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                List.of(
+                        new CreateOrderItemRequest(product.getId(), 1),
+                        new CreateOrderItemRequest(product.getId(), 2)
+                )
+        );
+
+        assertThrows(
+                DuplicateProductException.class,
+                () -> orderService.createOrder(request)
+        );
+
+        Product unchangedProduct =
+                productRepository.findById(product.getId()).orElseThrow();
+
+        assertEquals(10, unchangedProduct.getStock());
+        assertEquals(0, orderRepository.count());
+    }
+
+    @Test
+    void shouldGetCreatedOrder() {
+        Product product = productRepository.save(
+                new Product(
+                        "Mouse",
+                        new BigDecimal("39.50"),
+                        5,
+                        true
+                )
+        );
+
+        OrderResponse created = orderService.createOrder(
+                new CreateOrderRequest(
+                        List.of(
+                                new CreateOrderItemRequest(product.getId(), 2)
+                        )
+                )
+        );
+
+        OrderResponse found = orderService.getOrder(created.id());
+
+        assertEquals(created.id(), found.id());
+        assertEquals(new BigDecimal("79.00"), found.total());
+        assertEquals(1, found.items().size());
+        assertEquals(product.getId(), found.items().getFirst().productId());
+        assertEquals(2, found.items().getFirst().quantity());
+        assertEquals(new BigDecimal("39.50"), found.items().getFirst().price());
+    }
+
+    @Test
+    void shouldThrowWhenOrderDoesNotExist() {
+        assertThrows(
+                OrderNotFoundException.class,
+                () -> orderService.getOrder(999999L)
+        );
     }
 }

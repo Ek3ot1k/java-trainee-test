@@ -54,7 +54,7 @@ public class OrderService {
             OrderItem orderItem=new OrderItem(
                     product,
                     itemRequest.quantity(),
-                    subtotal
+                    price
             );
 
             order.addItem(orderItem);
