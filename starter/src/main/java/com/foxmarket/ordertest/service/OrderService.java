@@ -7,10 +7,7 @@ import com.foxmarket.ordertest.dto.OrderResponse;
 import com.foxmarket.ordertest.entity.Order;
 import com.foxmarket.ordertest.entity.OrderItem;
 import com.foxmarket.ordertest.entity.Product;
-import com.foxmarket.ordertest.exception.DuplicateProductException;
-import com.foxmarket.ordertest.exception.InsufficientStockException;
-import com.foxmarket.ordertest.exception.ProductNotFoundException;
-import com.foxmarket.ordertest.exception.ProductUnavailableException;
+import com.foxmarket.ordertest.exception.*;
 import com.foxmarket.ordertest.repository.OrderRepository;
 import com.foxmarket.ordertest.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -64,11 +61,18 @@ public class OrderService {
             total=total.add(subtotal);
         }
 
-        Order savedOrder=orderRepository.save(order);
+        order.updateTotal(total);
 
-        savedOrder.updateTotal(total);
+        Order savedOrder = orderRepository.save(order);
 
         return toResponse(savedOrder);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrder(Long orderId){
+        Order order=orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        return toResponse(order);
     }
 
     private void validateDuplicates(CreateOrderRequest request) {

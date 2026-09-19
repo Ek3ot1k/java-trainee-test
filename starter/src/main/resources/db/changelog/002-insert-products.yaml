@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-insert-demo-products
+      author: amin
+      changes:
+        - insert:
+            tableName: products
+            columns:
+              - column:
+                  name: name
+                  value: Keyboard
+              - column:
+                  name: price
+                  valueNumeric: 79.99
+              - column:
+                  name: stock
+                  valueNumeric: 10
+              - column:
+                  name: available
+                  valueBoolean: true
+
+        - insert:
+            tableName: products
+            columns:
+              - column:
+                  name: name
+                  value: Mouse
+              - column:
+                  name: price
+                  valueNumeric: 39.50
+              - column:
+                  name: stock
+                  valueNumeric: 5
+              - column:
+                  name: available
+                  valueBoolean: true
+
+        - insert:
+            tableName: products
+            columns:
+              - column:
+                  name: name
+                  value: Monitor
+              - column:
+                  name: price
+                  valueNumeric: 249.90
+              - column:
+                  name: stock
+                  valueNumeric: 0
+              - column:
+                  name: available
+                  valueBoolean: true
+
+        - insert:
+            tableName: products
+            columns:
+              - column:
+                  name: name
+                  value: Headphones
+              - column:
+                  name: price
+                  valueNumeric: 99.00
+              - column:
+                  name: stock
+                  valueNumeric: 7
+              - column:
+                  name: available
+                  valueBoolean: false
