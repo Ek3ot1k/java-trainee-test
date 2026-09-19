@@ -32,6 +32,10 @@ public class Order {
         item.setOrder(this);
     }
 
+    public void updateTotal(BigDecimal total){
+        this.total=total;
+    }
+
     public Long getId() {
         return id;
     }
