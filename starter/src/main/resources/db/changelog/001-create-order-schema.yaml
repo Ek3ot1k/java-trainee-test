@@ -1,0 +1,126 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-products
+      author: amin
+      changes:
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: price
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: stock
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: available
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+
+        - sql:
+            sql: ALTER TABLE products ADD CONSTRAINT chk_products_price_non_negative CHECK (price >= 0)
+
+        - sql:
+            sql: ALTER TABLE products ADD CONSTRAINT chk_products_stock_non_negative CHECK (stock >= 0)
+
+  - changeSet:
+      id: 002-create-orders
+      author: amin
+      changes:
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: total
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+
+        - sql:
+            sql: ALTER TABLE orders ADD CONSTRAINT chk_orders_total_non_negative CHECK (total >= 0)
+
+  - changeSet:
+      id: 003-create-order-items
+      author: amin
+      changes:
+        - createTable:
+            tableName: order_items
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: order_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: price
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: order_items
+            baseColumnNames: order_id
+            referencedTableName: orders
+            referencedColumnNames: id
+            constraintName: fk_order_items_order
+
+        - addForeignKeyConstraint:
+            baseTableName: order_items
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
+            constraintName: fk_order_items_product
+
+        - sql:
+            sql: ALTER TABLE order_items ADD CONSTRAINT chk_order_items_quantity_positive CHECK (quantity > 0)
+
+        - sql:
+            sql: ALTER TABLE order_items ADD CONSTRAINT chk_order_items_price_non_negative CHECK (price >= 0)
